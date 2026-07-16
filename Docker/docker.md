@@ -2780,3 +2780,652 @@ localhost:8080 → A:80
 localhost:8081 → B:80
 ```
 
+# Dockerfile
+
+## What is a Dockerfile?
+
+A Dockerfile is a text file containing instructions that Docker uses to build a Docker Image.
+
+It defines:
+
+- Base operating system
+- Runtime environment
+- Application code
+- Dependencies
+- Commands to run the application
+
+Flow:
+
+```
+Application Code
+
+       ↓
+
+Dockerfile
+
+       ↓
+
+docker build
+
+       ↓
+
+Docker Image
+
+       ↓
+
+docker run
+
+       ↓
+
+Container
+```
+
+---
+
+# Why Use Dockerfile?
+
+Without Dockerfile:
+
+You manually install:
+
+- Node.js
+- npm packages
+- Environment setup
+- Configuration
+
+Every time.
+
+With Dockerfile:
+
+Everything is written once and automatically built.
+
+Benefits:
+
+- Repeatable builds
+- Same environment everywhere
+- Easy deployment
+- Version control friendly
+
+---
+
+# Dockerfile Example
+
+Node.js Backend:
+
+Project:
+
+```
+backend-api
+
+├── src
+│   └── server.ts
+├── package.json
+├── package-lock.json
+└── Dockerfile
+```
+
+Dockerfile:
+
+```dockerfile
+FROM node:22
+
+WORKDIR /app
+
+COPY package*.json .
+
+RUN npm install
+
+COPY . .
+
+EXPOSE 3000
+
+CMD ["npm","start"]
+```
+
+---
+
+# Dockerfile Instructions
+
+## 1. FROM
+
+Defines the base image.
+
+Example:
+
+```dockerfile
+FROM node:22
+```
+
+Means:
+
+Use Node.js version 22 as the base environment.
+
+Other examples:
+
+```dockerfile
+FROM python:3.12
+```
+
+```dockerfile
+FROM postgres:16
+```
+
+---
+
+# 2. WORKDIR
+
+Sets the working directory inside the container.
+
+Example:
+
+```dockerfile
+WORKDIR /app
+```
+
+Now all commands run inside:
+
+```
+/app
+```
+
+Instead of:
+
+```
+/
+```
+
+---
+
+# 3. COPY
+
+Copies files from your machine into the image.
+
+Example:
+
+```dockerfile
+COPY . .
+```
+
+Meaning:
+
+```
+Local Project
+
+        ↓
+
+Container /app
+```
+
+Specific copy:
+
+```dockerfile
+COPY package.json .
+```
+
+---
+
+# 4. RUN
+
+Executes commands while building the image.
+
+Example:
+
+```dockerfile
+RUN npm install
+```
+
+During build:
+
+```
+Install dependencies
+```
+
+Other examples:
+
+```dockerfile
+RUN apt update
+```
+
+```dockerfile
+RUN npm run build
+```
+
+---
+
+# 5. CMD
+
+Defines the command executed when the container starts.
+
+Example:
+
+```dockerfile
+CMD ["npm","start"]
+```
+
+When container runs:
+
+```
+Start Node.js application
+```
+
+Important:
+
+CMD runs during container startup.
+
+---
+
+# 6. ENTRYPOINT
+
+Similar to CMD but harder to override.
+
+Example:
+
+```dockerfile
+ENTRYPOINT ["node"]
+```
+
+Running:
+
+```bash
+docker run app server.js
+```
+
+Executes:
+
+```
+node server.js
+```
+
+---
+
+# CMD vs ENTRYPOINT
+
+| CMD | ENTRYPOINT |
+|-|-|
+| Default command | Main command |
+| Easy to override | Difficult to override |
+| Used commonly | Used for fixed commands |
+
+---
+
+# 7. EXPOSE
+
+Documents which port the application uses.
+
+Example:
+
+```dockerfile
+EXPOSE 3000
+```
+
+It does not actually publish the port.
+
+For access:
+
+```bash
+docker run -p 3000:3000 app
+```
+
+---
+
+# 8. ENV
+
+Creates environment variables.
+
+Example:
+
+```dockerfile
+ENV NODE_ENV=production
+```
+
+Inside container:
+
+```
+NODE_ENV=production
+```
+
+---
+
+# 9. ARG
+
+Build-time variable.
+
+Example:
+
+```dockerfile
+ARG VERSION=1.0
+```
+
+Used only during image building.
+
+---
+
+# 10. USER
+
+Changes the user running the application.
+
+Example:
+
+```dockerfile
+USER node
+```
+
+Useful for security.
+
+---
+
+# Building an Image
+
+Command:
+
+```bash
+docker build -t my-api .
+```
+
+Explanation:
+
+```
+docker build
+
+        ↓
+
+-t my-api
+
+        ↓
+
+Name image
+
+        ↓
+
+.
+
+Current directory
+```
+
+---
+
+# Running Image
+
+After building:
+
+```bash
+docker run -p 3000:3000 my-api
+```
+
+Flow:
+
+```
+Image
+
+ ↓
+
+Container
+
+ ↓
+
+Application
+```
+
+---
+
+# Node.js + TypeScript Dockerfile Example
+
+Production style:
+
+```dockerfile
+FROM node:22-alpine
+
+WORKDIR /app
+
+COPY package*.json .
+
+RUN npm ci
+
+COPY . .
+
+RUN npm run build
+
+EXPOSE 3000
+
+CMD ["npm","start"]
+```
+
+---
+
+# Why Use Alpine?
+
+Example:
+
+```dockerfile
+FROM node:22-alpine
+```
+
+Alpine Linux is:
+
+- Smaller
+- Faster
+- Uses less storage
+
+Normal image:
+
+```
+node:22
+
+900MB+
+```
+
+Alpine:
+
+```
+node:22-alpine
+
+100-200MB
+```
+
+---
+
+# Dockerfile Best Practices
+
+## 1. Use Specific Versions
+
+Bad:
+
+```dockerfile
+FROM node
+```
+
+Good:
+
+```dockerfile
+FROM node:22-alpine
+```
+
+---
+
+## 2. Use .dockerignore
+
+Create:
+
+```
+.dockerignore
+```
+
+Example:
+
+```
+node_modules
+.git
+.env
+dist
+```
+
+Prevents unnecessary files copying.
+
+---
+
+## 3. Use npm ci Instead of npm install
+
+For production:
+
+```dockerfile
+RUN npm ci
+```
+
+Benefits:
+
+- Faster
+- Uses lock file
+- Reproducible builds
+
+---
+
+## 4. Reduce Image Size
+
+Avoid:
+
+- Unnecessary packages
+- Large files
+- Development dependencies
+
+---
+
+## 5. Run as Non-root User
+
+Better security:
+
+```dockerfile
+USER node
+```
+
+---
+
+# Dockerfile for IAM Backend Project
+
+Your project:
+
+```
+Team Access Control API
+
+Node.js
+TypeScript
+Express
+Prisma
+PostgreSQL
+Redis
+```
+
+Backend Dockerfile:
+
+```dockerfile
+FROM node:22-alpine
+
+WORKDIR /app
+
+COPY package*.json .
+
+RUN npm ci
+
+COPY . .
+
+RUN npm run build
+
+EXPOSE 4000
+
+CMD ["npm","start"]
+```
+
+Then Docker Compose will connect:
+
+```
+Backend Container
+
+        |
+
+        |
+
+PostgreSQL Container
+
+        |
+
+Redis Container
+```
+
+---
+
+# Dockerfile Build Process
+
+```
+Dockerfile
+
+     |
+
+     ↓
+
+FROM
+
+     |
+
+     ↓
+
+COPY
+
+     |
+
+     ↓
+
+RUN
+
+     |
+
+     ↓
+
+CMD
+
+     |
+
+     ↓
+
+Docker Image
+```
+
+---
+
+# Interview Questions
+
+## What is Dockerfile?
+
+A Dockerfile is a script containing instructions used to build a Docker image.
+
+---
+
+## Difference between RUN and CMD?
+
+RUN:
+- Executes during image building.
+
+CMD:
+- Executes when the container starts.
+
+---
+
+## Difference between COPY and ADD?
+
+COPY:
+- Simple file copying.
+
+ADD:
+- Supports extra features like URL download and archive extraction.
+
+Usually COPY is preferred.
+
+---
+
+## What is the purpose of FROM?
+
+FROM specifies the base image used to create a new Docker image.
+
+---
+
+## Why use .dockerignore?
+
+To prevent unnecessary files from being copied into the Docker image and reduce image size.
