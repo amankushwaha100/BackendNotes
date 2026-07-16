@@ -4064,3 +4064,629 @@ Linux:
 ```
 /var/lib/docker/volumes/
 ```
+
+
+
+# Docker Networks
+
+## What is a Docker Network?
+
+A Docker Network allows containers to communicate with each other and with external systems.
+
+By default, containers are isolated.
+
+Example:
+
+```
+Backend Container
+
+        ❌
+
+PostgreSQL Container
+```
+
+They cannot communicate unless they are connected through a network.
+
+With Docker Network:
+
+```
+Backend Container
+
+        |
+        |
+ Docker Network
+
+        |
+        |
+
+PostgreSQL Container
+```
+
+---
+
+# Why Do We Need Docker Networks?
+
+In real applications, multiple services work together.
+
+Example:
+
+```
+Frontend
+
+    |
+
+Backend API
+
+    |
+
+PostgreSQL
+
+    |
+
+Redis
+```
+
+Each service runs in its own container.
+
+They need a way to communicate.
+
+Docker Network provides this communication.
+
+---
+
+# Docker Network Architecture
+
+```
+              Docker Host
+
+        +----------------+
+
+        |   Network      |
+
+        |                |
+
+        |  API Container |
+
+        |       |        |
+
+        |       |        |
+
+        |  DB Container |
+
+        |                |
+
+        +----------------+
+```
+
+---
+
+# Default Docker Networks
+
+When Docker is installed, it creates default networks:
+
+## 1. Bridge
+
+Default network for containers.
+
+Example:
+
+```bash
+docker run nginx
+```
+
+Container automatically joins bridge network.
+
+---
+
+## 2. Host
+
+Container shares the host machine's network.
+
+Example:
+
+```
+Container
+
+   |
+
+Host Network
+```
+
+Less isolation.
+
+---
+
+## 3. None
+
+No network access.
+
+Container is completely isolated.
+
+---
+
+# Bridge Network (Most Used)
+
+Bridge is the default and most common network.
+
+Example:
+
+```
+Container A
+
+      |
+
+ bridge network
+
+      |
+
+Container B
+```
+
+Containers can communicate using:
+
+- Container name
+- IP address
+
+---
+
+# Creating a Network
+
+Command:
+
+```bash
+docker network create network_name
+```
+
+Example:
+
+```bash
+docker network create app-network
+```
+
+---
+
+# List Networks
+
+```bash
+docker network ls
+```
+
+Example:
+
+```
+NETWORK ID
+
+bridge
+
+host
+
+none
+
+app-network
+```
+
+---
+
+# Inspect Network
+
+```bash
+docker network inspect app-network
+```
+
+Shows:
+
+- Connected containers
+- IP addresses
+- Network configuration
+
+---
+
+# Remove Network
+
+```bash
+docker network rm app-network
+```
+
+---
+
+# Connecting Container to Network
+
+Create network:
+
+```bash
+docker network create backend-network
+```
+
+Run PostgreSQL:
+
+```bash
+docker run \
+--name postgres-db \
+--network backend-network \
+postgres
+```
+
+Run API:
+
+```bash
+docker run \
+--name backend-api \
+--network backend-network \
+my-api
+```
+
+Now:
+
+```
+backend-api
+
+      |
+
+backend-network
+
+      |
+
+postgres-db
+```
+
+They can communicate.
+
+---
+
+# Container DNS
+
+Docker provides automatic DNS resolution.
+
+Example:
+
+PostgreSQL container:
+
+```
+Name:
+
+postgres-db
+```
+
+Backend connection:
+
+```
+DATABASE_URL=
+postgresql://user:password@postgres-db:5432/database
+```
+
+Notice:
+
+```
+postgres-db
+```
+
+is used instead of an IP address.
+
+---
+
+# Why Use Container Name Instead of IP?
+
+Bad:
+
+```
+postgresql://192.168.1.20:5432/db
+```
+
+Problem:
+
+IP can change.
+
+---
+
+Good:
+
+```
+postgresql://postgres-db:5432/db
+```
+
+Docker automatically resolves the name.
+
+---
+
+# Example Without Network
+
+Run database:
+
+```bash
+docker run \
+--name postgres-db \
+postgres
+```
+
+Run backend:
+
+```bash
+docker run \
+--name api \
+my-api
+```
+
+Problem:
+
+```
+api ❌ postgres-db
+```
+
+Cannot communicate.
+
+---
+
+# Example With Network
+
+Create network:
+
+```bash
+docker network create app-network
+```
+
+Database:
+
+```bash
+docker run \
+--name postgres-db \
+--network app-network \
+postgres
+```
+
+Backend:
+
+```bash
+docker run \
+--name api \
+--network app-network \
+my-api
+```
+
+Now:
+
+```
+api
+
+   ↓
+
+postgres-db
+```
+
+Communication works.
+
+---
+
+# Docker Compose Networking
+
+Docker Compose automatically creates a network.
+
+Example:
+
+```yaml
+services:
+
+  api:
+    image: my-api
+
+  postgres:
+    image: postgres
+
+```
+
+Docker creates:
+
+```
+project_default network
+```
+
+Both containers join automatically.
+
+---
+
+# Backend Example (IAM Project)
+
+Services:
+
+```
+                 app-network
+
+                      |
+
+        ----------------------------
+
+        |             |            |
+
+     API           PostgreSQL     Redis
+
+  port 4000       port 5432     port 6379
+
+        ----------------------------
+```
+
+Environment:
+
+Backend:
+
+```
+DATABASE_URL=
+postgresql://postgres:password@postgres:5432/iamdb
+
+
+REDIS_URL=
+redis://redis:6379
+```
+
+Important:
+
+Use service names:
+
+```
+postgres
+
+redis
+```
+
+not:
+
+```
+localhost
+```
+
+---
+
+# Common Network Commands
+
+## List networks
+
+```bash
+docker network ls
+```
+
+---
+
+## Create network
+
+```bash
+docker network create name
+```
+
+---
+
+## Inspect network
+
+```bash
+docker network inspect name
+```
+
+---
+
+## Connect container
+
+```bash
+docker network connect network container
+```
+
+---
+
+## Disconnect container
+
+```bash
+docker network disconnect network container
+```
+
+---
+
+## Remove network
+
+```bash
+docker network rm name
+```
+
+---
+
+# Network Drivers
+
+## Bridge
+
+Default.
+
+Used for:
+
+- Local development
+- Most applications
+
+---
+
+## Host
+
+Uses host network directly.
+
+Used for:
+
+- Performance requirements
+
+---
+
+## Overlay
+
+Used in Docker Swarm.
+
+Connects containers across multiple machines.
+
+---
+
+## Macvlan
+
+Gives containers their own MAC address.
+
+Used in advanced networking.
+
+---
+
+# Best Practices
+
+## 1. Create Separate Networks
+
+Example:
+
+```
+frontend-network
+
+backend-network
+
+database-network
+```
+
+---
+
+## 2. Avoid Using IP Addresses
+
+Use:
+
+```
+container-name
+```
+
+instead.
+
+---
+
+## 3. Isolate Sensitive Services
+
+Example:
+
+Database should not directly connect to frontend.
+
+---
+
+# Interview Questions
+
+## What is a Docker Network?
+
+A Docker Network allows containers to communicate with each other and external systems.
+
+---
+
+## How do containers communicate?
+
+Containers communicate through Docker networks using container names or IP addresses.
+
+---
+
+## Why use container names instead of IP addresses?
+
+Because container IP addresses can change, while Docker DNS automatically resolves container names.
+
+---
+
+## What is the default Docker network?
+
+The default network is the bridge network.
+
+---
+
+## Does Docker Compose create networks automatically?
+
+Yes. Docker Compose creates a default network for services defined in the compose file.
+
+
