@@ -2241,3 +2241,542 @@ docker exec -it container_name bash
 docker system prune
 ```
 
+# Docker Port Mapping
+
+## What is Port Mapping?
+
+Docker containers run in an isolated network environment. The ports inside a container are not directly accessible from your computer.
+
+**Port Mapping** connects a port on your host machine to a port inside the Docker container.
+
+Syntax:
+
+```bash
+docker run -p HOST_PORT:CONTAINER_PORT image_name
+```
+
+Example:
+
+```bash
+docker run -p 8080:80 nginx
+```
+
+Meaning:
+
+```
+Your Computer                 Docker Container
+
+localhost:8080  ----------->  nginx:80
+(Host Port)                  (Container Port)
+```
+
+Now you can open:
+
+```
+http://localhost:8080
+```
+
+and it reaches nginx running on port `80` inside the container.
+
+---
+
+# Why Do We Need Port Mapping?
+
+Containers are isolated.
+
+Example:
+
+Run nginx:
+
+```bash
+docker run nginx
+```
+
+Nginx starts inside the container:
+
+```
+Container
+
+nginx
+|
+Port 80
+```
+
+But your browser:
+
+```
+localhost
+```
+
+cannot access it.
+
+Because:
+
+```
+Your Machine
+
+       ❌
+
+Container Network
+```
+
+Port mapping creates the connection.
+
+---
+
+# Host Port vs Container Port
+
+## Container Port
+
+The port where your application runs inside the container.
+
+Example:
+
+Node.js app:
+
+```javascript
+app.listen(3000)
+```
+
+Inside container:
+
+```
+Container Port: 3000
+```
+
+---
+
+## Host Port
+
+The port exposed on your computer.
+
+Example:
+
+```
+localhost:5000
+```
+
+Your browser/client uses this.
+
+---
+
+# Example 1: Node.js Application
+
+Application:
+
+```javascript
+app.listen(3000)
+```
+
+Dockerfile:
+
+```dockerfile
+EXPOSE 3000
+```
+
+Run:
+
+```bash
+docker run -p 5000:3000 my-api
+```
+
+Flow:
+
+```
+Browser
+
+localhost:5000
+
+      |
+
+      ↓
+
+Host Port 5000
+
+      |
+
+      ↓
+
+Container Port 3000
+
+      |
+
+      ↓
+
+Node.js App
+```
+
+Access:
+
+```
+http://localhost:5000
+```
+
+---
+
+# Example 2: PostgreSQL Container
+
+PostgreSQL default port:
+
+```
+5432
+```
+
+Run:
+
+```bash
+docker run \
+-p 5433:5432 \
+postgres
+```
+
+Connection:
+
+```
+Your Application
+
+localhost:5433
+
+        |
+
+        ↓
+
+PostgreSQL Container
+
+5432
+```
+
+Why different ports?
+
+Because maybe your local PostgreSQL already uses:
+
+```
+localhost:5432
+```
+
+So Docker uses:
+
+```
+localhost:5433
+```
+
+---
+
+# Multiple Containers Example
+
+Backend Project:
+
+```
+                 Host Machine
+
+Frontend
+localhost:3000
+        |
+        |
+Backend API
+localhost:4000
+        |
+        |
+Database
+localhost:5433
+
+
+              Docker
+
+        +----------------+
+
+        | Frontend       |
+        | Port 3000      |
+        +----------------+
+
+        | Backend        |
+        | Port 4000      |
+        +----------------+
+
+        | PostgreSQL     |
+        | Port 5432      |
+        +----------------+
+```
+
+Commands:
+
+Frontend:
+
+```bash
+docker run -p 3000:3000 frontend
+```
+
+Backend:
+
+```bash
+docker run -p 4000:4000 backend
+```
+
+Database:
+
+```bash
+docker run -p 5433:5432 postgres
+```
+
+---
+
+# Short Syntax
+
+Long form:
+
+```bash
+docker run --publish 8080:80 nginx
+```
+
+Short form:
+
+```bash
+docker run -p 8080:80 nginx
+```
+
+Both are same.
+
+---
+
+# Check Port Mapping
+
+Command:
+
+```bash
+docker ps
+```
+
+Example output:
+
+```
+CONTAINER ID   PORTS
+
+abc123         0.0.0.0:8080->80/tcp
+```
+
+Meaning:
+
+```
+Host 8080
+
+     ↓
+
+Container 80
+```
+
+---
+
+# Mapping to Specific Network Interface
+
+Default:
+
+```bash
+-p 8080:80
+```
+
+Available on all interfaces.
+
+Specific:
+
+```bash
+-p 127.0.0.1:8080:80 nginx
+```
+
+Only accessible from your machine.
+
+---
+
+# Expose vs Publish
+
+## EXPOSE
+
+Dockerfile:
+
+```dockerfile
+EXPOSE 3000
+```
+
+It only documents the port.
+
+It does NOT make the port accessible.
+
+---
+
+## Publish (-p)
+
+Command:
+
+```bash
+docker run -p 3000:3000 app
+```
+
+Actually creates access.
+
+---
+
+# Common Mistakes
+
+## Mistake 1
+
+Application listens on:
+
+```javascript
+localhost:3000
+```
+
+inside container.
+
+Problem:
+
+Other containers cannot access it.
+
+Correct:
+
+```javascript
+app.listen(3000, "0.0.0.0")
+```
+
+---
+
+## Mistake 2
+
+Wrong mapping:
+
+Application:
+
+```
+Container port: 4000
+```
+
+Run:
+
+```bash
+docker run -p 3000:3000 app
+```
+
+Result:
+
+❌ Cannot connect
+
+Correct:
+
+```bash
+docker run -p 3000:4000 app
+```
+
+---
+
+# Docker Compose Port Mapping
+
+Instead of:
+
+```bash
+docker run -p 4000:4000 backend
+```
+
+docker-compose.yml:
+
+```yaml
+services:
+  backend:
+    image: backend
+    ports:
+      - "4000:4000"
+```
+
+---
+
+# Real IAM Backend Example
+
+Your project:
+
+```
+Node.js + Express API
+PostgreSQL
+Redis
+```
+
+docker-compose.yml:
+
+```yaml
+services:
+
+  api:
+    build: .
+    ports:
+      - "4000:4000"
+
+  postgres:
+    image: postgres:16
+    ports:
+      - "5433:5432"
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+```
+
+Access:
+
+API:
+
+```
+localhost:4000
+```
+
+Database:
+
+```
+localhost:5433
+```
+
+Redis:
+
+```
+localhost:6379
+```
+
+---
+
+# Interview Questions
+
+## What is Docker port mapping?
+
+Docker port mapping connects a host machine port to a container port so external applications can access services running inside containers.
+
+---
+
+## What does -p 8080:80 mean?
+
+It maps host port `8080` to container port `80`.
+
+---
+
+## Difference between EXPOSE and -p?
+
+EXPOSE documents the port.
+
+-p publishes the port and makes it accessible.
+
+---
+
+## Can multiple containers use the same container port?
+
+Yes.
+
+Example:
+
+```
+Container A: 80
+Container B: 80
+```
+
+But host ports must be different:
+
+```
+localhost:8080 → A:80
+
+localhost:8081 → B:80
+```
+
