@@ -678,3 +678,943 @@ A Docker Registry is a repository used to store and distribute Docker images, su
 3. If the image is not found, it downloads it from a registry.
 4. A container is created from the image.
 5. The container starts running.
+
+
+# Docker Installation & Setup
+
+## What is Docker Installation?
+
+Installing Docker means installing the Docker Engine and tools required to:
+
+- Create images
+- Run containers
+- Manage networks
+- Manage volumes
+
+---
+
+# Docker Components Installed
+
+When you install Docker Desktop/Engine, you get:
+
+## 1. Docker Engine
+
+The core runtime that runs containers.
+
+Responsible for:
+
+- Creating containers
+- Starting/stopping containers
+- Managing images
+- Managing networks
+
+---
+
+## 2. Docker CLI
+
+Command-line interface used to interact with Docker.
+
+Example:
+
+```bash
+docker run nginx
+```
+
+---
+
+## 3. Docker Compose
+
+Tool used to run multiple containers together.
+
+Example:
+
+A backend project:
+
+```
+Backend API
++
+PostgreSQL
++
+Redis
+```
+
+can be started using:
+
+```bash
+docker compose up
+```
+
+---
+
+# Installing Docker on Windows
+
+## Requirements
+
+Before installation:
+
+- Windows 10/11 64-bit
+- WSL 2 enabled
+- Virtualization enabled in BIOS
+- Minimum 4GB RAM recommended
+
+---
+
+## Step 1: Install WSL 2
+
+Open PowerShell as Administrator:
+
+```powershell
+wsl --install
+```
+
+Restart your computer.
+
+Check:
+
+```powershell
+wsl --version
+```
+
+---
+
+## Step 2: Install Docker Desktop
+
+Download and install Docker Desktop.
+
+During installation:
+
+Enable:
+
+```
+Use WSL 2 based engine
+```
+
+Restart after installation.
+
+---
+
+## Step 3: Verify Installation
+
+Open terminal:
+
+```bash
+docker --version
+```
+
+Example:
+
+```
+Docker version 28.x.x
+```
+
+---
+
+Check Docker information:
+
+```bash
+docker info
+```
+
+Output contains:
+
+- Containers
+- Images
+- Server information
+- Storage driver
+
+---
+
+# Test Docker Installation
+
+Run:
+
+```bash
+docker run hello-world
+```
+
+What happens?
+
+1. Docker searches for `hello-world` image.
+2. If not available, downloads it.
+3. Creates a container.
+4. Runs the container.
+5. Shows success message.
+
+---
+
+# Docker Desktop Dashboard
+
+Docker Desktop provides a GUI to manage:
+
+## Containers
+
+View:
+
+- Running containers
+- Stopped containers
+- Logs
+
+---
+
+## Images
+
+View downloaded images.
+
+Example:
+
+```
+nginx
+postgres
+redis
+node
+```
+
+---
+
+## Volumes
+
+Manage persistent data.
+
+Example:
+
+```
+PostgreSQL database files
+```
+
+---
+
+## Networks
+
+Manage communication between containers.
+
+---
+
+# Basic Docker Commands After Installation
+
+## Check Docker Version
+
+```bash
+docker version
+```
+
+Shows:
+
+Client version
+
++
+
+Server version
+
+---
+
+## Docker System Information
+
+```bash
+docker info
+```
+
+---
+
+## Docker Help
+
+```bash
+docker help
+```
+
+or
+
+```bash
+docker command --help
+```
+
+Example:
+
+```bash
+docker run --help
+```
+
+---
+
+# Docker Service Check
+
+Linux:
+
+```bash
+systemctl status docker
+```
+
+Start Docker:
+
+```bash
+sudo systemctl start docker
+```
+
+---
+
+# Docker Login
+
+To access private images:
+
+```bash
+docker login
+```
+
+You provide:
+
+- Docker Hub username
+- Password/token
+
+---
+
+# Docker Logout
+
+```bash
+docker logout
+```
+
+---
+
+# Docker Installation Troubleshooting
+
+## Problem: Docker command not found
+
+Solution:
+
+- Restart terminal
+- Check Docker installation
+- Add Docker to PATH
+
+---
+
+## Problem: Docker daemon not running
+
+Error:
+
+```
+Cannot connect to Docker daemon
+```
+
+Solution:
+
+Start Docker Desktop.
+
+---
+
+## Problem: WSL issue
+
+Check:
+
+```powershell
+wsl --status
+```
+
+Update:
+
+```powershell
+wsl --update
+```
+
+---
+
+# Real Backend Developer Setup
+
+For Node.js + TypeScript Backend:
+
+Install:
+
+```
+Docker Desktop
+
+        |
+
+        ↓
+
+Docker Engine
+
+        |
+
+        ↓
+
+Docker Compose
+
+        |
+
+        ↓
+
+Run:
+
+Node.js Container
+PostgreSQL Container
+Redis Container
+```
+
+---
+
+# Interview Questions
+
+## How do you verify Docker installation?
+
+Using:
+
+```bash
+docker --version
+```
+
+and
+
+```bash
+docker run hello-world
+```
+
+---
+
+## What is Docker Desktop?
+
+Docker Desktop is an application that provides Docker Engine, CLI, Compose, and GUI tools for Windows and macOS.
+
+---
+
+## Why is WSL 2 required on Windows?
+
+Because Docker containers use Linux kernel features, and WSL 2 provides a lightweight Linux environment.
+
+---
+
+## Difference between Docker Engine and Docker Desktop?
+
+Docker Engine:
+- Core runtime
+- Runs containers
+
+Docker Desktop:
+- GUI application
+- Includes Docker Engine, CLI, Compose, and Kubernetes support
+
+
+
+# Docker Images
+
+## What is a Docker Image?
+
+A Docker Image is a **read-only template** used to create Docker containers.
+
+It contains everything required to run an application:
+
+- Application code
+- Runtime environment
+- System libraries
+- Dependencies
+- Configuration files
+
+Think of an image as a **blueprint** and a container as the **running house**.
+
+```
+Docker Image
+      |
+      |
+      v
+Docker Container
+```
+
+---
+
+# Real Example
+
+Suppose you have a Node.js application.
+
+Without Docker:
+
+You need:
+
+```
+Install Node.js
+Install npm packages
+Copy project files
+Configure environment
+Run application
+```
+
+With Docker Image:
+
+```
+Node.js Runtime
++
+Application Code
++
+Dependencies
++
+Configuration
+
+        ↓
+
+     Docker Image
+
+        ↓
+
+     Container
+```
+
+---
+
+# Image vs Container
+
+| Docker Image | Docker Container |
+|---|---|
+| Blueprint/template | Running instance |
+| Read-only | Writable layer |
+| Stored locally | Runs as a process |
+| Created using Dockerfile | Created from an image |
+| Cannot execute directly | Executes application |
+
+Example:
+
+```
+nginx Image
+
+       ↓
+
+nginx Container 1
+
+nginx Container 2
+
+nginx Container 3
+```
+
+One image can create multiple containers.
+
+---
+
+# Docker Image Layers
+
+Docker images are built using multiple layers.
+
+Example:
+
+```
+Application Image
+
+Layer 5:
+Application Code
+
+Layer 4:
+npm dependencies
+
+Layer 3:
+Node.js
+
+Layer 2:
+Linux libraries
+
+Layer 1:
+Base Operating System
+```
+
+Each layer is cached.
+
+---
+
+# Why Layers Matter?
+
+## Faster Builds
+
+If only your code changes:
+
+Docker does not rebuild everything.
+
+It reuses existing layers.
+
+---
+
+## Less Storage
+
+Common layers are shared between images.
+
+Example:
+
+```
+Node Image
+
+        +
+
+React App Image
+
+        +
+
+Express App Image
+```
+
+All can share the same Node.js layer.
+
+---
+
+# Image Repository
+
+Images are stored in repositories.
+
+Examples:
+
+- Docker Hub
+- Private Registry
+- Cloud Registry
+
+Example:
+
+```
+docker.io/library/nginx
+```
+
+Structure:
+
+```
+Registry
+    |
+    |
+ Repository
+    |
+    |
+ Image
+```
+
+---
+
+# Pulling Images
+
+Download an image from Docker Hub:
+
+```bash
+docker pull nginx
+```
+
+Docker downloads:
+
+```
+nginx image
+
+↓
+
+Local Machine
+```
+
+---
+
+# List Images
+
+Show all downloaded images:
+
+```bash
+docker images
+```
+
+Example output:
+
+```
+REPOSITORY     TAG       IMAGE ID
+nginx          latest    abc123
+node           22        xyz456
+postgres       16        pqr789
+```
+
+---
+
+# Image Information
+
+Inspect an image:
+
+```bash
+docker inspect nginx
+```
+
+Shows:
+
+- Layers
+- Configuration
+- Environment variables
+- Architecture
+
+---
+
+# Remove Images
+
+Remove an image:
+
+```bash
+docker rmi nginx
+```
+
+Remove unused images:
+
+```bash
+docker image prune
+```
+
+---
+
+# Image Tags
+
+A tag identifies different versions of an image.
+
+Example:
+
+```
+node:22
+
+node:20
+
+node:18
+```
+
+Format:
+
+```
+image_name:version
+```
+
+Example:
+
+```bash
+docker pull node:22
+```
+
+---
+
+# Latest Tag
+
+If you don't specify a tag:
+
+```bash
+docker pull nginx
+```
+
+Docker uses:
+
+```
+nginx:latest
+```
+
+Example:
+
+```bash
+docker pull nginx:latest
+```
+
+---
+
+# Creating Your Own Image
+
+Custom images are created using:
+
+```
+Dockerfile
+```
+
+Example:
+
+Project:
+
+```
+my-api
+
+ |
+ |-- server.js
+ |-- package.json
+ |-- Dockerfile
+```
+
+Dockerfile:
+
+```dockerfile
+FROM node:22
+
+WORKDIR /app
+
+COPY package*.json .
+
+RUN npm install
+
+COPY . .
+
+CMD ["npm","start"]
+```
+
+Build image:
+
+```bash
+docker build -t my-api .
+```
+
+Result:
+
+```
+my-api Image
+```
+
+---
+
+# Running Custom Image
+
+Create container:
+
+```bash
+docker run my-api
+```
+
+Flow:
+
+```
+Dockerfile
+
+      ↓
+
+Docker Build
+
+      ↓
+
+Docker Image
+
+      ↓
+
+Docker Run
+
+      ↓
+
+Container
+```
+
+---
+
+# Common Image Commands
+
+## Pull Image
+
+```bash
+docker pull image_name
+```
+
+Example:
+
+```bash
+docker pull redis
+```
+
+---
+
+## List Images
+
+```bash
+docker images
+```
+
+---
+
+## Remove Image
+
+```bash
+docker rmi image_name
+```
+
+---
+
+## Image History
+
+Shows image layers:
+
+```bash
+docker history nginx
+```
+
+---
+
+## Inspect Image
+
+```bash
+docker inspect nginx
+```
+
+---
+
+# Practical Backend Example
+
+IAM Backend Project:
+
+Technology:
+
+```
+Node.js
+TypeScript
+Express
+PostgreSQL
+Redis
+Prisma
+```
+
+Images required:
+
+```
+node:22
+
+postgres:16
+
+redis:7
+```
+
+Architecture:
+
+```
+        Docker Compose
+
+              |
+
+   ----------------------
+
+   Node Container
+
+   PostgreSQL Container
+
+   Redis Container
+
+   ----------------------
+
+              |
+
+        Application
+```
+
+---
+
+# Interview Questions
+
+## What is a Docker Image?
+
+A Docker Image is a read-only template containing application code, dependencies, libraries, and configuration required to create containers.
+
+---
+
+## How are Docker Images created?
+
+Docker images are created using a Dockerfile and the `docker build` command.
+
+Example:
+
+```bash
+docker build -t app-name .
+```
+
+---
+
+## What are Docker Image Layers?
+
+Layers are independent read-only filesystem changes that make up a Docker image. Layers improve caching and reduce storage usage.
+
+---
+
+## Difference between Image and Container?
+
+An image is a blueprint, while a container is a running instance of that image.
+
+---
+
+## What happens when you run docker pull nginx?
+
+Docker downloads the nginx image from a registry and stores it locally.
+
+
