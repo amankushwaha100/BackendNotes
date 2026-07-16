@@ -3429,3 +3429,638 @@ FROM specifies the base image used to create a new Docker image.
 ## Why use .dockerignore?
 
 To prevent unnecessary files from being copied into the Docker image and reduce image size.
+
+
+# Docker Volumes
+
+## What is a Docker Volume?
+
+A Docker Volume is a mechanism used to **store persistent data outside a container's writable layer**.
+
+By default, data inside a container is temporary.
+
+If the container is deleted:
+
+```
+Container Deleted
+
+        ↓
+
+Application Data Deleted ❌
+```
+
+Volumes solve this problem:
+
+```
+Container Deleted
+
+        ↓
+
+Volume Data Remains ✅
+```
+
+---
+
+# Why Do We Need Volumes?
+
+Containers are designed to be temporary.
+
+Example:
+
+You run PostgreSQL:
+
+```bash
+docker run postgres
+```
+
+Database stores data inside the container.
+
+Now:
+
+```bash
+docker rm postgres-container
+```
+
+Database data is lost.
+
+Using volume:
+
+```
+PostgreSQL Container
+
+        |
+
+        ↓
+
+Docker Volume
+
+        |
+
+        ↓
+
+Permanent Database Storage
+```
+
+Even if the container is removed, data remains.
+
+---
+
+# Volume Architecture
+
+```
+                Docker Host
+
++--------------------------------+
+
+        Volume
+
+          |
+
+          |
+
++----------------+
+
+| Container      |
+
+| PostgreSQL     |
+
++----------------+
+
+```
+
+The container uses storage provided by the volume.
+
+---
+
+# Types of Docker Storage
+
+Docker provides three main storage options:
+
+```
+1. Volumes
+
+2. Bind Mounts
+
+3. tmpfs Mounts
+```
+
+---
+
+# 1. Docker Volumes (Recommended)
+
+Managed by Docker.
+
+Example:
+
+```
+/var/lib/docker/volumes/
+```
+
+Advantages:
+
+- Managed by Docker
+- Easy backup
+- Works on all platforms
+- Best for production databases
+
+---
+
+# 2. Bind Mounts
+
+Maps a host directory directly into a container.
+
+Example:
+
+```
+Your Computer Folder
+
+        |
+
+        ↓
+
+Container Folder
+```
+
+Example:
+
+```bash
+docker run \
+-v ./data:/app/data \
+node-app
+```
+
+Used for:
+
+- Development
+- Live code changes
+
+---
+
+# 3. tmpfs Mounts
+
+Stores data in memory.
+
+Characteristics:
+
+- Very fast
+- Temporary
+- Removed when container stops
+
+Used for:
+
+- Sensitive temporary data
+
+---
+
+# Volume vs Bind Mount
+
+| Volume | Bind Mount |
+|-|-|
+| Managed by Docker | Managed by user |
+| Stored by Docker | Any host directory |
+| Better for production | Better for development |
+| Easier backup | More control |
+
+---
+
+# Creating a Volume
+
+Command:
+
+```bash
+docker volume create volume_name
+```
+
+Example:
+
+```bash
+docker volume create postgres-data
+```
+
+---
+
+# List Volumes
+
+```bash
+docker volume ls
+```
+
+Output:
+
+```
+DRIVER
+
+local
+
+postgres-data
+```
+
+---
+
+# Inspect Volume
+
+```bash
+docker volume inspect postgres-data
+```
+
+Shows:
+
+- Location
+- Driver
+- Metadata
+
+---
+
+# Remove Volume
+
+```bash
+docker volume rm postgres-data
+```
+
+---
+
+# Remove Unused Volumes
+
+```bash
+docker volume prune
+```
+
+---
+
+# Using Volume with Container
+
+Syntax:
+
+```bash
+docker run \
+-v volume_name:/container/path \
+image
+```
+
+Example:
+
+```bash
+docker run \
+-v postgres-data:/var/lib/postgresql/data \
+postgres
+```
+
+Meaning:
+
+```
+postgres-data
+
+        |
+
+        ↓
+
+/var/lib/postgresql/data
+
+        |
+
+        ↓
+
+PostgreSQL Database Files
+```
+
+---
+
+# PostgreSQL Example
+
+Without Volume:
+
+```bash
+docker run postgres
+```
+
+Problem:
+
+```
+Container removed
+
+↓
+
+Database deleted
+```
+
+---
+
+With Volume:
+
+```bash
+docker run \
+--name postgres-db \
+-e POSTGRES_PASSWORD=password \
+-v postgres-data:/var/lib/postgresql/data \
+postgres
+```
+
+Now:
+
+```
+PostgreSQL Container
+
+        |
+
+        ↓
+
+postgres-data Volume
+
+        |
+
+        ↓
+
+Database Saved
+```
+
+---
+
+# Bind Mount Example
+
+During development:
+
+Project:
+
+```
+backend/
+
+   src/
+
+   package.json
+```
+
+Run:
+
+```bash
+docker run \
+-v $(pwd):/app \
+node-app
+```
+
+Now:
+
+```
+Local Code
+
+      ↕
+
+Container Code
+```
+
+Changes appear immediately.
+
+---
+
+# Docker Compose Volume Example
+
+For IAM Backend:
+
+Services:
+
+- Node.js API
+- PostgreSQL
+- Redis
+
+docker-compose.yml:
+
+```yaml
+services:
+
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+
+volumes:
+  postgres-data:
+```
+
+Flow:
+
+```
+PostgreSQL Container
+
+          |
+
+          ↓
+
+postgres-data
+
+          |
+
+          ↓
+
+Persistent Database
+```
+
+---
+
+# Volume Lifecycle
+
+```
+Create Volume
+
+      ↓
+
+Attach Volume
+
+      ↓
+
+Container Uses Volume
+
+      ↓
+
+Container Deleted
+
+      ↓
+
+Volume Still Exists
+
+      ↓
+
+Attach Again
+```
+
+---
+
+# Checking Container Volumes
+
+Command:
+
+```bash
+docker inspect container_name
+```
+
+Look for:
+
+```
+Mounts
+```
+
+Example:
+
+```json
+"Mounts": [
+ {
+  "Type": "volume",
+  "Name": "postgres-data"
+ }
+]
+```
+
+---
+
+# Backup Docker Volume
+
+Example:
+
+```bash
+docker run \
+--rm \
+-v postgres-data:/data \
+-v $(pwd):/backup \
+ubuntu \
+tar czf /backup/postgres-backup.tar.gz /data
+```
+
+Creates:
+
+```
+postgres-backup.tar.gz
+```
+
+---
+
+# Restore Volume
+
+Restore backup:
+
+```bash
+docker run \
+--rm \
+-v postgres-data:/data \
+-v $(pwd):/backup \
+ubuntu \
+tar xzf /backup/postgres-backup.tar.gz -C /
+```
+
+---
+
+# Real Backend Example
+
+IAM Project:
+
+Without Volume:
+
+```
+PostgreSQL Container
+
+       ↓
+
+User deleted container
+
+       ↓
+
+Users table lost ❌
+```
+
+With Volume:
+
+```
+PostgreSQL Container
+
+       ↓
+
+postgres-data Volume
+
+       ↓
+
+Users
+Organizations
+Roles
+Permissions
+Audit Logs
+
+Saved ✅
+```
+
+---
+
+# Best Practices
+
+## Use Volumes for:
+
+✅ Databases
+
+- PostgreSQL
+- MySQL
+- MongoDB
+- Redis
+
+---
+
+## Do Not Store:
+
+❌ Application source code
+
+Use:
+
+- Docker image
+- Bind mount for development
+
+---
+
+## Always Backup Important Volumes
+
+Especially:
+
+- Production databases
+- User data
+- Uploaded files
+
+---
+
+# Interview Questions
+
+## What is a Docker Volume?
+
+A Docker Volume is a storage mechanism that allows containers to persist data even after the container is removed.
+
+---
+
+## Why are volumes needed?
+
+Because containers are temporary and data inside containers can be lost when they are deleted.
+
+---
+
+## Difference between Volume and Bind Mount?
+
+Volume:
+- Managed by Docker
+- Recommended for production
+
+Bind Mount:
+- Uses host filesystem
+- Common in development
+
+---
+
+## Does deleting a container delete its volume?
+
+No. Volumes exist independently unless explicitly removed.
+
+---
+
+## Where are Docker volumes stored?
+
+By default:
+
+Linux:
+
+```
+/var/lib/docker/volumes/
+```
