@@ -4690,3 +4690,709 @@ The default network is the bridge network.
 Yes. Docker Compose creates a default network for services defined in the compose file.
 
 
+# Docker Compose
+
+## What is Docker Compose?
+
+Docker Compose is a tool used to **define and run multiple Docker containers together** using a single configuration file.
+
+The configuration file is:
+
+```
+docker-compose.yml
+```
+
+Instead of running many Docker commands manually, Compose manages everything.
+
+---
+
+# Why Do We Need Docker Compose?
+
+Real applications contain multiple services.
+
+Example:
+
+```
+IAM Backend Application
+
+        |
+        |
+  ----------------
+
+  Node.js API
+
+  PostgreSQL Database
+
+  Redis Cache
+
+  ----------------
+```
+
+Without Docker Compose:
+
+```bash
+docker run node-api
+
+docker run postgres
+
+docker run redis
+```
+
+You must manually:
+
+- Create containers
+- Configure networks
+- Create volumes
+- Pass environment variables
+
+---
+
+With Docker Compose:
+
+```bash
+docker compose up
+```
+
+Everything starts automatically.
+
+---
+
+# Docker Compose Architecture
+
+```
+              docker-compose.yml
+
+                     |
+
+                     ↓
+
+             Docker Compose
+
+                     |
+
+        ------------------------
+
+        |          |           |
+
+      API       Database     Redis
+
+    Container  Container   Container
+
+        ------------------------
+
+              Docker Network
+
+              Docker Volumes
+```
+
+---
+
+# docker-compose.yml
+
+A YAML file that defines:
+
+- Services
+- Images
+- Containers
+- Ports
+- Environment variables
+- Volumes
+- Networks
+
+---
+
+# Basic Docker Compose Example
+
+```yaml
+services:
+
+  nginx:
+    image: nginx
+    ports:
+      - "8080:80"
+```
+
+Run:
+
+```bash
+docker compose up
+```
+
+Result:
+
+```
+localhost:8080
+
+        |
+
+        ↓
+
+nginx container
+```
+
+---
+
+# Important Compose Concepts
+
+## 1. Services
+
+A service represents a container.
+
+Example:
+
+```yaml
+services:
+
+  api:
+    image: node-api
+```
+
+Here:
+
+```
+api = service name
+```
+
+---
+
+## 2. Image
+
+Defines which Docker image to use.
+
+Example:
+
+```yaml
+image: postgres:16
+```
+
+Docker downloads it if not available.
+
+---
+
+## 3. Build
+
+Used when creating your own image.
+
+Example:
+
+```yaml
+api:
+  build: .
+```
+
+It uses:
+
+```
+Dockerfile
+```
+
+from the current directory.
+
+---
+
+## 4. Ports
+
+Maps container ports to your machine.
+
+Example:
+
+```yaml
+ports:
+  - "4000:4000"
+```
+
+Meaning:
+
+```
+Your Computer
+
+localhost:4000
+
+      |
+
+      ↓
+
+Container
+
+port 4000
+```
+
+---
+
+## 5. Environment Variables
+
+Pass configuration.
+
+Example:
+
+```yaml
+environment:
+
+  DATABASE_PASSWORD: secret
+```
+
+Common for:
+
+- Database passwords
+- API keys
+- Application settings
+
+---
+
+## 6. Volumes
+
+Store persistent data.
+
+Example:
+
+```yaml
+volumes:
+
+  - postgres-data:/var/lib/postgresql/data
+```
+
+Database data survives container deletion.
+
+---
+
+## 7. Networks
+
+Allow containers to communicate.
+
+Example:
+
+```yaml
+networks:
+
+  - app-network
+```
+
+---
+
+# Full Backend Example
+
+IAM Backend:
+
+Technology:
+
+- Node.js
+- TypeScript
+- Express
+- PostgreSQL
+- Redis
+- Prisma
+
+
+docker-compose.yml:
+
+```yaml
+services:
+
+  api:
+    build: .
+    container_name: iam-api
+    ports:
+      - "4000:4000"
+    environment:
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/iam
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      - postgres
+      - redis
+
+
+  postgres:
+    image: postgres:16
+    container_name: iam-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: iam
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+
+  redis:
+    image: redis:7
+    container_name: iam-redis
+
+
+volumes:
+
+  postgres-data:
+```
+
+---
+
+# Running Compose
+
+## Start Services
+
+```bash
+docker compose up
+```
+
+Output:
+
+```
+Creating iam-api
+
+Creating iam-postgres
+
+Creating iam-redis
+
+Started
+```
+
+---
+
+# Run in Background
+
+Detached mode:
+
+```bash
+docker compose up -d
+```
+
+---
+
+# Stop Services
+
+```bash
+docker compose down
+```
+
+This removes:
+
+- Containers
+- Network
+
+But keeps volumes.
+
+---
+
+# Remove Everything Including Volumes
+
+```bash
+docker compose down -v
+```
+
+Warning:
+
+Database data will be deleted.
+
+---
+
+# View Running Services
+
+```bash
+docker compose ps
+```
+
+Example:
+
+```
+NAME
+
+iam-api
+
+iam-postgres
+
+iam-redis
+```
+
+---
+
+# View Logs
+
+All services:
+
+```bash
+docker compose logs
+```
+
+Specific service:
+
+```bash
+docker compose logs api
+```
+
+Follow logs:
+
+```bash
+docker compose logs -f api
+```
+
+---
+
+# Restart Services
+
+Restart all:
+
+```bash
+docker compose restart
+```
+
+Specific:
+
+```bash
+docker compose restart api
+```
+
+---
+
+# Execute Command Inside Service
+
+Example:
+
+```bash
+docker compose exec api bash
+```
+
+Now:
+
+```
+Inside API Container
+```
+
+---
+
+# Rebuild Images
+
+After code changes:
+
+```bash
+docker compose build
+```
+
+Build and start:
+
+```bash
+docker compose up --build
+```
+
+---
+
+# Docker Compose Lifecycle
+
+```
+docker-compose.yml
+
+        |
+
+        ↓
+
+docker compose up
+
+        |
+
+        ↓
+
+Create Network
+
+        |
+
+        ↓
+
+Create Volumes
+
+        |
+
+        ↓
+
+Create Containers
+
+        |
+
+        ↓
+
+Start Application
+```
+
+---
+
+# depends_on
+
+Example:
+
+```yaml
+api:
+  depends_on:
+    - postgres
+```
+
+Meaning:
+
+Start PostgreSQL before API.
+
+Important:
+
+It does NOT guarantee database is ready.
+
+For production:
+
+Use:
+
+- Health checks
+- Retry logic
+
+---
+
+# Health Check Example
+
+```yaml
+postgres:
+
+  healthcheck:
+
+    test:
+      ["CMD-SHELL","pg_isready"]
+
+    interval: 10s
+```
+
+---
+
+# Docker Compose vs Docker Run
+
+| Docker Run | Docker Compose |
+|-|-|
+| One container | Multiple containers |
+| CLI commands | YAML configuration |
+| Manual setup | Automatic setup |
+| Hard to maintain | Easy to manage |
+| Good for testing | Good for real projects |
+
+---
+
+# Real Developer Workflow
+
+Clone project:
+
+```bash
+git clone project
+```
+
+Enter folder:
+
+```bash
+cd project
+```
+
+Start everything:
+
+```bash
+docker compose up
+```
+
+Application starts:
+
+```
+API ✅
+
+Database ✅
+
+Redis ✅
+```
+
+---
+
+# Best Practices
+
+## Use .env file
+
+Instead of:
+
+```yaml
+PASSWORD: mypassword
+```
+
+Use:
+
+```yaml
+PASSWORD: ${DB_PASSWORD}
+```
+
+---
+
+## Separate Development and Production
+
+Example:
+
+```
+docker-compose.yml
+
+docker-compose.prod.yml
+```
+
+---
+
+## Give Services Meaningful Names
+
+Good:
+
+```
+postgres
+redis
+api
+worker
+```
+
+Bad:
+
+```
+container1
+test123
+```
+
+---
+
+# Interview Questions
+
+## What is Docker Compose?
+
+Docker Compose is a tool used to define and manage multi-container Docker applications using a YAML configuration file.
+
+---
+
+## What file does Docker Compose use?
+
+```
+docker-compose.yml
+```
+
+---
+
+## Difference between Docker and Docker Compose?
+
+Docker manages individual containers.
+
+Docker Compose manages multiple related containers together.
+
+---
+
+## How do you start Compose services?
+
+```bash
+docker compose up
+```
+
+---
+
+## How do you stop Compose services?
+
+```bash
+docker compose down
+```
+
+---
+
+## Does docker compose down delete volumes?
+
+No.
+
+To remove volumes:
+
+```bash
+docker compose down -v
+```
