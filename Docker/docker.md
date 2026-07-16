@@ -1618,3 +1618,626 @@ An image is a blueprint, while a container is a running instance of that image.
 Docker downloads the nginx image from a registry and stores it locally.
 
 
+# Docker CLI Commands
+
+## What is Docker CLI?
+
+Docker CLI (Command Line Interface) is a tool used to communicate with the Docker Engine.
+
+Example:
+
+```bash
+docker run nginx
+```
+
+The CLI sends commands to Docker Engine, which performs the operation.
+
+---
+
+# Docker Command Structure
+
+General format:
+
+```bash
+docker <command> <options> <object>
+```
+
+Example:
+
+```bash
+docker run -d -p 8080:80 nginx
+```
+
+Breakdown:
+
+```
+docker     → Docker CLI
+
+run        → Command
+
+-d         → Option
+
+-p         → Port mapping
+
+nginx      → Image
+```
+
+---
+
+# 1. Docker Version
+
+Check Docker version:
+
+```bash
+docker --version
+```
+
+Detailed information:
+
+```bash
+docker version
+```
+
+Output:
+
+```
+Client:
+ Docker CLI version
+
+Server:
+ Docker Engine version
+```
+
+---
+
+# 2. Docker Information
+
+Show Docker system information:
+
+```bash
+docker info
+```
+
+Displays:
+
+- Number of containers
+- Number of images
+- Storage driver
+- Docker version
+- CPU information
+- Memory information
+
+---
+
+# 3. Docker Help
+
+Get help:
+
+```bash
+docker help
+```
+
+Command-specific help:
+
+```bash
+docker run --help
+```
+
+---
+
+# Image Commands
+
+## 4. Download Image
+
+Pull image from Docker Hub:
+
+```bash
+docker pull image_name
+```
+
+Example:
+
+```bash
+docker pull nginx
+```
+
+With version:
+
+```bash
+docker pull node:22
+```
+
+---
+
+## 5. List Images
+
+Show downloaded images:
+
+```bash
+docker images
+```
+
+or
+
+```bash
+docker image ls
+```
+
+Example:
+
+```
+REPOSITORY   TAG
+nginx        latest
+node         22
+```
+
+---
+
+## 6. Remove Image
+
+Delete image:
+
+```bash
+docker rmi image_name
+```
+
+Example:
+
+```bash
+docker rmi nginx
+```
+
+Remove unused images:
+
+```bash
+docker image prune
+```
+
+---
+
+## 7. Image History
+
+View image layers:
+
+```bash
+docker history image_name
+```
+
+Example:
+
+```bash
+docker history nginx
+```
+
+---
+
+## 8. Inspect Image
+
+View detailed image information:
+
+```bash
+docker inspect image_name
+```
+
+---
+
+# Container Commands
+
+## 9. Create Container
+
+Create without running:
+
+```bash
+docker create nginx
+```
+
+---
+
+## 10. Run Container
+
+Create and start:
+
+```bash
+docker run nginx
+```
+
+---
+
+## 11. Run Container in Background
+
+Detached mode:
+
+```bash
+docker run -d nginx
+```
+
+---
+
+## 12. Give Container Name
+
+```bash
+docker run --name my-container nginx
+```
+
+Example:
+
+```
+my-container
+```
+
+instead of random names.
+
+---
+
+## 13. List Running Containers
+
+```bash
+docker ps
+```
+
+---
+
+## 14. List All Containers
+
+Running + stopped:
+
+```bash
+docker ps -a
+```
+
+---
+
+## 15. Stop Container
+
+```bash
+docker stop container_name
+```
+
+Example:
+
+```bash
+docker stop api-container
+```
+
+---
+
+## 16. Start Container
+
+```bash
+docker start container_name
+```
+
+---
+
+## 17. Restart Container
+
+```bash
+docker restart container_name
+```
+
+---
+
+## 18. Remove Container
+
+Remove stopped container:
+
+```bash
+docker rm container_name
+```
+
+Force remove:
+
+```bash
+docker rm -f container_name
+```
+
+---
+
+# Container Debugging Commands
+
+## 19. View Logs
+
+```bash
+docker logs container_name
+```
+
+Live logs:
+
+```bash
+docker logs -f container_name
+```
+
+Example:
+
+```bash
+docker logs -f backend-api
+```
+
+---
+
+## 20. Enter Running Container
+
+Open terminal inside container:
+
+```bash
+docker exec -it container_name bash
+```
+
+Example:
+
+```bash
+docker exec -it backend-api bash
+```
+
+If bash is unavailable:
+
+```bash
+docker exec -it container_name sh
+```
+
+---
+
+## 21. Run Command Inside Container
+
+Example:
+
+```bash
+docker exec container_name ls
+```
+
+Output:
+
+```
+app
+node_modules
+package.json
+```
+
+---
+
+## 22. Container Details
+
+```bash
+docker inspect container_name
+```
+
+Shows:
+
+- IP address
+- Environment variables
+- Volumes
+- Network information
+
+---
+
+## 23. Container Resource Usage
+
+```bash
+docker stats
+```
+
+Shows:
+
+- CPU usage
+- Memory usage
+- Network usage
+
+---
+
+# Port Commands
+
+## 24. Port Mapping
+
+Example:
+
+```bash
+docker run -p 3000:3000 backend-api
+```
+
+Format:
+
+```
+-p HOST_PORT:CONTAINER_PORT
+```
+
+Example:
+
+```
+localhost:3000
+
+      ↓
+
+Container:3000
+```
+
+---
+
+# Environment Variable Commands
+
+## 25. Add Environment Variables
+
+Example:
+
+```bash
+docker run \
+-e DB_PASSWORD=password \
+postgres
+```
+
+Multiple variables:
+
+```bash
+docker run \
+-e USER=admin \
+-e PASSWORD=123 \
+app
+```
+
+---
+
+# Build Commands
+
+## 26. Build Docker Image
+
+From Dockerfile:
+
+```bash
+docker build -t app-name .
+```
+
+Example:
+
+```bash
+docker build -t iam-api .
+```
+
+Meaning:
+
+```
+-t = tag/name
+
+. = current directory
+```
+
+---
+
+# Docker System Commands
+
+## 27. Docker Disk Usage
+
+Check storage:
+
+```bash
+docker system df
+```
+
+---
+
+## 28. Remove Unused Data
+
+Remove:
+
+- stopped containers
+- unused images
+- unused networks
+
+Command:
+
+```bash
+docker system prune
+```
+
+Force:
+
+```bash
+docker system prune -f
+```
+
+---
+
+# Complete Workflow Example
+
+Building a backend image:
+
+```
+Project
+
+ |
+
+Dockerfile
+
+ |
+
+docker build -t api .
+
+ |
+
+Docker Image
+
+ |
+
+docker run -d -p 3000:3000 api
+
+ |
+
+Container Running
+
+ |
+
+docker logs api-container
+
+ |
+
+Application Live
+```
+
+---
+
+# Daily Backend Developer Commands
+
+Most used:
+
+```bash
+docker ps
+
+docker images
+
+docker build -t app .
+
+docker run -d app
+
+docker logs -f container
+
+docker exec -it container bash
+
+docker stop container
+
+docker rm container
+
+docker compose up
+
+docker compose down
+```
+
+---
+
+# Interview Questions
+
+## What is docker ps?
+
+Shows currently running Docker containers.
+
+---
+
+## Difference between docker ps and docker ps -a?
+
+`docker ps`
+- Shows running containers only.
+
+`docker ps -a`
+- Shows all containers including stopped ones.
+
+---
+
+## How do you check container logs?
+
+```bash
+docker logs container_name
+```
+
+---
+
+## How do you access a running container?
+
+```bash
+docker exec -it container_name bash
+```
+
+---
+
+## How do you remove unused Docker resources?
+
+```bash
+docker system prune
+```
+
